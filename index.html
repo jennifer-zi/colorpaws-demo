@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>colorpaws — track your dog's adventures</title>
+<meta name="description" content="A mobile-first dog walk tracker with social features. Light up your map, group by pet, plan playdates with friends.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,400&family=DM+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+
+button, [role="button"]{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  -moz-appearance:none !important;
+  background:none;
+  border:0 !important;
+  outline:0 !important;
+  box-shadow:none !important;
+  font:inherit;
+  color:inherit;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+button:focus, button:focus-visible, button:active,
+[role="button"]:focus, [role="button"]:focus-visible, [role="button"]:active{
+  outline:0 !important;
+  box-shadow:none !important;
+  border:0 !important;
+}
+
+:root{
+  --cr:#FAF6EF;--bark:#3D2B1F;--paw:#C4703A;--pawl:#F0D9C5;--pawll:#FBF2EB;
+  --gr:#5C8A4A;--grl:#D4E8CC;--sky:#7EB8D4;--mu:#9A8C84;--wh:#FFFFFF;
+  --bd:rgba(61,43,31,0.13);
+  --red:#C44040;--redl:#FCE8E8;--grn:#3B6D11;--grnl:#EAF3DE;
+  --f1:'Fraunces',serif;--f2:'DM Sans',sans-serif;
+}
+html,body{height:100%;}
+body{font-family:var(--f2);background:#E8DFCF;color:var(--bark);overflow:hidden;font-size:14px;display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.app{max-width:400px;width:100%;margin:0 auto;display:flex;flex-direction:column;height:100vh;max-height:900px;background:var(--cr);box-shadow:0 10px 40px rgba(0,0,0,0.08);overflow:hidden;}
+@media (max-width:430px){.app{max-width:none;height:100vh;max-height:none;box-shadow:none;}}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:1px solid var(--bd);background:var(--wh);}
+.brand{font-family:var(--f1);font-size:20px;font-weight:700;letter-spacing:-.5px;}
+.brand em{color:var(--paw);font-style:normal;}
+.avatar-btn{width:34px;height:34px;border-radius:50%;background:var(--paw);display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;font-family:var(--f1);font-weight:700;}
+
+.bottom-nav{display:flex;background:var(--wh);padding:8px 6px 10px;}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 4px 5px;border-radius:12px;font-family:var(--f2);font-size:10px;font-weight:500;color:var(--mu);transition:color .15s, background .15s;user-select:none;}
+.bnav-btn svg{width:22px;height:22px;stroke:var(--mu);stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:stroke .15s;display:block;}
+.bnav-btn.active{color:var(--paw);background:var(--pawll);}
+.bnav-btn.active svg{stroke:var(--paw);}
+
+.content{flex:1;overflow-y:auto;}
+.view{display:none;}.view.active{display:block;}
+
+.section-pad{padding:14px 14px 0;}
+.section-title{font-family:var(--f1);font-size:17px;font-weight:500;margin-bottom:12px;}
+.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:20px;border:1.5px solid var(--bd);font-size:12px;cursor:pointer;transition:all .15s;background:var(--wh);color:var(--bark);white-space:nowrap;}
+.pill.on{background:var(--paw);border-color:var(--paw);color:#fff;}
+.card{background:var(--wh);border:1px solid var(--bd);border-radius:14px;padding:13px;margin-bottom:10px;}
+.btn-paw{padding:0 18px;height:40px;border-radius:12px;background:var(--paw);color:#fff;font-family:var(--f2);font-size:14px;font-weight:500;cursor:pointer;}
+.btn-out{padding:0 18px;height:40px;border-radius:12px;border:1.5px solid var(--bd) !important;background:transparent;color:var(--bark);font-family:var(--f2);font-size:14px;cursor:pointer;}
+.btn-red{padding:0 16px;height:36px;border-radius:10px;background:var(--redl);color:var(--red);font-family:var(--f2);font-size:13px;cursor:pointer;}
+.btn-grn{padding:0 16px;height:36px;border-radius:10px;background:var(--grnl);color:var(--grn);font-family:var(--f2);font-size:13px;cursor:pointer;}
+.tag{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:500;}
+.row{display:flex;align-items:center;gap:10px;}
+.row-between{display:flex;align-items:center;justify-content:space-between;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}
+.muted{color:var(--mu);}
+.txt-sm{font-size:12px;}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.initials{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;}
+.chip-scroll{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.chip-scroll::-webkit-scrollbar{display:none;}
+
+.subtab-bar{display:flex;border-bottom:1px solid var(--bd);background:var(--wh);}
+.stab{flex:1;padding:9px 6px;text-align:center;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.stab.active{color:var(--paw);border-bottom-color:var(--paw);}
+
+.map-wrap{width:100%;height:300px;overflow:hidden;background:#C9DEB0;border-bottom:1px solid var(--bd);}
+.map-svg{width:100%;height:100%;}
+.friends-filter{padding:10px 14px 6px;border-bottom:1px solid var(--bd);background:var(--wh);}
+.active-track{stroke-dasharray:6 4;animation:march 1s linear infinite;}
+@keyframes march{to{stroke-dashoffset:-20}}
+
+.rec-card{margin:12px 14px;background:var(--wh);border:1px solid var(--bd);border-radius:16px;}
+.rec-inner{padding:14px;}
+.timer-big{font-family:var(--f1);font-size:34px;font-weight:300;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+.status-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.rec-dot{width:9px;height:9px;border-radius:50%;background:var(--mu);}
+.rec-dot.on{background:var(--red);animation:blink .9s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.rec-btns{display:flex;gap:10px;margin-top:12px;}
+
+.btn-start-big{flex:1;height:46px;border-radius:13px;background:var(--paw);color:#fff;font-family:var(--f2);font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.btn-stop-big{flex:1;height:46px;border-radius:13px;border:2px solid var(--red) !important;background:transparent;color:var(--red);font-family:var(--f2);font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+.overlay{display:none;position:absolute;inset:0;background:rgba(30,18,10,.5);z-index:50;align-items:flex-end;justify-content:center;}
+.overlay.show{display:flex;}
+.sheet{background:var(--cr);border-radius:22px 22px 0 0;padding:22px 18px 28px;width:100%;animation:slideup .22s ease-out;}
+@keyframes slideup{from{transform:translateY(50px);opacity:0}}
+.sheet h3{font-family:var(--f1);font-size:18px;font-weight:500;margin-bottom:16px;}
+.sheet label{display:block;font-size:12px;color:var(--mu);margin-bottom:5px;margin-top:12px;}
+.sheet input{width:100%;padding:10px 13px;border-radius:10px;border:1.5px solid var(--bd);background:var(--wh);font-family:var(--f2);font-size:14px;color:var(--bark);}
+.sheet input:focus{outline:none;border-color:var(--paw);}
+.sheet-btns{display:flex;gap:10px;margin-top:16px;}
+
+.walk-card{display:flex;align-items:center;gap:12px;}
+.walk-thumb{width:46px;height:46px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.walk-actions{display:flex;gap:6px;}
+.icon-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--bd) !important;background:transparent;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.icon-btn:hover{background:var(--pawll);}
+.icon-btn.del:hover{background:var(--redl);}
+
+.playdate-card{background:var(--wh);border:1px solid var(--bd);border-radius:14px;padding:13px;margin-bottom:10px;}
+.pd-upcoming{border-left:3px solid var(--paw);border-radius:0 14px 14px 0;}
+.pd-request{border-left:3px solid var(--sky);border-radius:0 14px 14px 0;}
+.date-badge{background:var(--pawl);color:#7A3D1A;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:500;}
+
+.pet-card{background:var(--wh);border:1px solid var(--bd);border-radius:14px;padding:13px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.pet-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.friend-card{background:var(--wh);border:1px solid var(--bd);border-radius:14px;padding:13px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.overlap-badge{background:#FBF2EB;color:#7A3D1A;border:1px solid var(--pawl);padding:3px 9px;border-radius:8px;font-size:11px;}
+.add-friend-bar{display:flex;gap:8px;margin-bottom:14px;}
+.add-friend-bar input{flex:1;padding:9px 13px;border-radius:10px;border:1.5px solid var(--bd);background:var(--wh);font-family:var(--f2);font-size:14px;color:var(--bark);}
+.add-friend-bar input:focus{outline:none;border-color:var(--paw);}
+
+.toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--bark);color:#fff;padding:9px 18px;border-radius:100px;font-size:13px;z-index:99;white-space:nowrap;animation:tin .25s ease-out;}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-8px)}}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+<div class="topbar">
+  <div class="brand">color<em>paws</em></div>
+  <div class="avatar-btn" role="button">Y</div>
+</div>
+
+<div class="content">
+  <div class="view active" id="view-home">
+    <div class="subtab-bar">
+      <div class="stab active" id="stab-mymap" onclick="switchSubTab('mymap')">My map</div>
+      <div class="stab" id="stab-friends-map" onclick="switchSubTab('friends-map')">Friend map</div>
+    </div>
+    <div id="subview-mymap">
+      <div class="map-wrap">
+        <svg class="map-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#C9DEB0"/>
+          <ellipse cx="310" cy="65" rx="58" ry="42" fill="#9ECC7F" opacity=".65"/>
+          <ellipse cx="75" cy="235" rx="48" ry="38" fill="#9ECC7F" opacity=".65"/>
+          <rect x="0" y="128" width="400" height="16" fill="#E3D5B5" opacity=".9"/>
+          <rect x="185" y="0" width="16" height="300" fill="#E3D5B5" opacity=".9"/>
+          <rect x="0" y="210" width="155" height="11" fill="#E3D5B5" opacity=".7"/>
+          <rect x="18" y="18" width="76" height="55" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="112" y="18" width="55" height="55" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="215" y="18" width="62" height="52" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="18" y="152" width="72" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="112" y="152" width="55" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="215" y="152" width="55" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="305" y="110" width="72" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <ellipse cx="75" cy="88" rx="32" ry="18" fill="#A0C8DD" opacity=".55"/>
+          <text x="310" y="63" text-anchor="middle" font-size="8" fill="#5C8A4A" font-family="DM Sans,sans-serif" opacity=".8">Maple Park</text>
+          <text x="75" y="233" text-anchor="middle" font-size="8" fill="#5C8A4A" font-family="DM Sans,sans-serif" opacity=".8">Dog Run</text>
+          <g id="my-walk-paths"></g>
+          <g id="active-walk-group" style="display:none">
+            <polyline id="active-line" points="" fill="none" stroke="#C4703A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" class="active-track"/>
+            <circle id="active-dot" cx="0" cy="0" r="7" fill="#C4703A"/>
+          </g>
+        </svg>
+      </div>
+      <div style="padding:10px 14px 0">
+        <div class="txt-sm muted" style="margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Walking with</div>
+        <div class="chip-scroll" id="pet-chips-home"></div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-inner">
+          <div class="status-row">
+            <div class="rec-dot" id="rec-dot"></div>
+            <div class="txt-sm muted" id="rec-status">Choose a pet and start walking</div>
+          </div>
+          <div class="timer-big" id="rec-timer">0:00</div>
+          <div class="rec-btns">
+            <div class="btn-start-big" role="button" id="btn-start" onclick="startWalk()">Start walk</div>
+            <div class="btn-stop-big" role="button" id="btn-stop" onclick="stopWalk()" data-disabled="true" style="opacity:.35;cursor:default;">End walk</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="subview-friends-map" style="display:none">
+      <div class="friends-filter">
+        <div class="txt-sm muted" style="margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-weight:500;">Show friends</div>
+        <div class="chip-scroll" id="friend-filter-chips"></div>
+      </div>
+      <div class="map-wrap">
+        <svg class="map-svg" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="300" fill="#C9DEB0"/>
+          <ellipse cx="310" cy="65" rx="58" ry="42" fill="#9ECC7F" opacity=".65"/>
+          <ellipse cx="75" cy="235" rx="48" ry="38" fill="#9ECC7F" opacity=".65"/>
+          <rect x="0" y="128" width="400" height="16" fill="#E3D5B5" opacity=".9"/>
+          <rect x="185" y="0" width="16" height="300" fill="#E3D5B5" opacity=".9"/>
+          <rect x="18" y="18" width="76" height="55" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="112" y="18" width="55" height="55" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="215" y="18" width="62" height="52" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="18" y="152" width="72" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="112" y="152" width="55" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <rect x="215" y="152" width="55" height="50" rx="4" fill="#D9C9A8" opacity=".5"/>
+          <ellipse cx="75" cy="88" rx="32" ry="18" fill="#A0C8DD" opacity=".55"/>
+          <text x="310" y="63" text-anchor="middle" font-size="8" fill="#5C8A4A" font-family="DM Sans,sans-serif" opacity=".8">Maple Park</text>
+          <text x="75" y="233" text-anchor="middle" font-size="8" fill="#5C8A4A" font-family="DM Sans,sans-serif" opacity=".8">Dog Run</text>
+          <g id="friend-walk-paths"></g>
+          <ellipse cx="193" cy="140" rx="18" ry="14" fill="#C4703A" opacity=".22" stroke="#C4703A" stroke-width="1.5"/>
+          <text x="193" y="130" text-anchor="middle" font-size="8" fill="#7A3D1A" font-family="DM Sans,sans-serif">hotspot</text>
+        </svg>
+      </div>
+      <div style="padding:10px 14px;background:var(--wh);border-top:1px solid var(--bd);">
+        <div class="row" style="gap:8px;flex-wrap:wrap;">
+          <div class="dot" style="background:#C4703A"></div><span class="txt-sm">You</span>
+          <div class="dot" style="background:#185FA5"></div><span class="txt-sm">Sam</span>
+          <div class="dot" style="background:#3B6D11"></div><span class="txt-sm">Mia</span>
+          <div class="dot" style="background:#854F0B"></div><span class="txt-sm">Jake</span>
+          <div style="margin-left:auto;"><span class="overlap-badge">Overlap zones</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-friends">
+    <div class="section-pad">
+      <div class="section-title">Friends</div>
+      <div class="add-friend-bar">
+        <input type="text" id="friend-search-input" placeholder="Search by name or @handle..."/>
+        <div class="btn-paw" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="addFriend()">Add</div>
+      </div>
+      <div id="friends-list"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-playdates">
+    <div class="section-pad">
+      <div class="row-between" style="margin-bottom:12px;">
+        <div class="section-title" style="margin:0">Play dates</div>
+        <div class="btn-paw" role="button" style="font-size:13px;height:34px;padding:0 14px;display:flex;align-items:center;justify-content:center;" onclick="openPdModal()">+ Schedule</div>
+      </div>
+      <div class="txt-sm muted" style="text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin-bottom:8px;">Requests</div>
+      <div id="pd-requests"></div>
+      <div class="txt-sm muted" style="text-transform:uppercase;letter-spacing:.5px;font-weight:500;margin:14px 0 8px;">Upcoming</div>
+      <div id="pd-upcoming"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-walks">
+    <div class="section-pad">
+      <div class="section-title">All walks</div>
+      <div id="walks-by-pet"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-pets">
+    <div class="section-pad">
+      <div class="section-title">My pets</div>
+      <div class="btn-paw" role="button" style="width:100%;margin-bottom:14px;display:flex;align-items:center;justify-content:center;" onclick="openAddPetModal()">+ Add a dog</div>
+      <div id="pets-list"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="bnav-btn active" role="button" id="bnav-home" onclick="switchTab('home')">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 13 15 13 15 21"/></svg>
+    Map
+  </div>
+  <div class="bnav-btn" role="button" id="bnav-friends" onclick="switchTab('friends')">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/><circle cx="18" cy="8" r="2.5"/><path d="M22 20c0-2.5-2-4.5-4-4.5"/></svg>
+    Friends
+  </div>
+  <div class="bnav-btn" role="button" id="bnav-playdates" onclick="switchTab('playdates')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="15" r="1.5"/></svg>
+    Dates
+  </div>
+  <div class="bnav-btn" role="button" id="bnav-walks" onclick="switchTab('walks')">
+    <svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="1.8"/><circle cx="11" cy="4" r="1.8"/><circle cx="17" cy="5" r="1.8"/><path d="M5 10c1 2 2 3 4 3.5l1 5a1 1 0 002 0l1-3 2 3a1 1 0 002-.5l-2-7c-.5-1.5-2-2-3-2l-2-1"/><circle cx="18" cy="8" r="1.8"/></svg>
+    Walks
+  </div>
+  <div class="bnav-btn" role="button" id="bnav-pets" onclick="switchTab('pets')">
+    <svg viewBox="0 0 24 24"><ellipse cx="12" cy="15" rx="5" ry="4"/><ellipse cx="8.5" cy="9.5" rx="2" ry="2.5"/><ellipse cx="15.5" cy="9.5" rx="2" ry="2.5"/><ellipse cx="5.5" cy="13" rx="1.8" ry="2.2"/><ellipse cx="18.5" cy="13" rx="1.8" ry="2.2"/></svg>
+    My pets
+  </div>
+</nav>
+
+<div class="overlay" id="overlay-edit-walk" onclick="closeOverlay('overlay-edit-walk')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h3>Edit walk</h3>
+    <label>Assign to pet</label>
+    <div class="chip-scroll" id="edit-walk-pets" style="margin-bottom:4px;"></div>
+    <label>Date</label><input type="text" id="edit-walk-date"/>
+    <div class="sheet-btns">
+      <div class="btn-out" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="closeOverlay('overlay-edit-walk')">Cancel</div>
+      <div class="btn-paw" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="saveWalkEdit()">Save</div>
+    </div>
+    <div class="btn-red" role="button" style="width:100%;margin-top:10px;height:38px;display:flex;align-items:center;justify-content:center;" onclick="deleteWalk()">Delete walk</div>
+  </div>
+</div>
+<div class="overlay" id="overlay-add-pet" onclick="closeOverlay('overlay-add-pet')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h3>Add a dog</h3>
+    <label>Name</label><input type="text" id="new-pet-name" placeholder="e.g. Biscuit"/>
+    <label>Breed</label><input type="text" id="new-pet-breed" placeholder="e.g. Golden Retriever"/>
+    <label>Emoji</label>
+    <div class="chip-scroll" id="emoji-picker" style="margin-top:6px;"></div>
+    <div class="sheet-btns">
+      <div class="btn-out" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="closeOverlay('overlay-add-pet')">Cancel</div>
+      <div class="btn-paw" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="savePet()">Add dog</div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay-pd" onclick="closeOverlay('overlay-pd')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h3>Schedule a play date</h3>
+    <label>Friend</label>
+    <div class="chip-scroll" id="pd-friend-chips" style="margin-bottom:4px;"></div>
+    <label>Date</label><input type="text" id="pd-date" placeholder="e.g. Sat, May 3"/>
+    <label>Time</label><input type="text" id="pd-time" placeholder="e.g. 10:00 AM"/>
+    <label>Location</label><input type="text" id="pd-location" placeholder="e.g. Maple Park"/>
+    <div class="sheet-btns">
+      <div class="btn-out" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="closeOverlay('overlay-pd')">Cancel</div>
+      <div class="btn-paw" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="savePd()">Send request</div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay-reschedule" onclick="closeOverlay('overlay-reschedule')">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <h3>Reschedule play date</h3>
+    <label>New date</label><input type="text" id="reschedule-date"/>
+    <label>New time</label><input type="text" id="reschedule-time"/>
+    <div class="sheet-btns">
+      <div class="btn-out" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="closeOverlay('overlay-reschedule')">Cancel</div>
+      <div class="btn-paw" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="saveReschedule()">Confirm</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const EMOJIS=['🐕','🐩','🦮','🐈','🐇','🐾','🦴','🐶'];
+const PET_COLORS=['#C4703A','#5C8A4A','#7EB8D4','#9B6DB5','#D97C4F','#4A90A4'];
+let pets=[{id:'p1',name:'Biscuit',breed:'Golden Retriever',emoji:'🐕',color:'#C4703A'},{id:'p2',name:'Luna',breed:'Border Collie',emoji:'🐩',color:'#5C8A4A'}];
+let friends=[{id:'f1',name:'Sam',handle:'@sam_w',initials:'SW',color:'#185FA5',pets:'Max (Lab)'},{id:'f2',name:'Mia',handle:'@mia_k',initials:'MK',color:'#3B6D11',pets:'Coco (Poodle)'},{id:'f3',name:'Jake',handle:'@jake_r',initials:'JR',color:'#854F0B',pets:'Rex (Husky)'}];
+const FRIEND_PATHS={f1:[[30,130],[60,132],[90,135],[120,138],[150,140],[180,142],[193,140],[210,140]],f2:[[193,140],[200,160],[210,180],[215,200],[210,215],[195,225],[180,230]],f3:[[300,128],[265,132],[235,136],[215,138],[193,140],[175,145],[155,155]]};
+let visibleFriends=new Set(['f1','f2','f3']);
+const WALK_PATHS=[[[55,125],[80,128],[110,130],[140,132],[170,135],[185,140],[193,140],[210,140],[235,145]],[[193,140],[195,160],[200,180],[205,200],[200,215],[188,225],[175,230]],[[300,35],[285,50],[265,65],[245,85],[225,108],[210,125],[193,140]],[[60,150],[80,155],[105,160],[130,163],[155,160],[172,155],[185,150]]];
+let walks=[{id:'w1',petId:'p1',date:'Mon Apr 28',duration:'24:10',distance:'1.4',pathIdx:0},{id:'w2',petId:'p2',date:'Mon Apr 28',duration:'18:42',distance:'1.1',pathIdx:1},{id:'w3',petId:'p1',date:'Sun Apr 27',duration:'32:05',distance:'2.0',pathIdx:2},{id:'w4',petId:'p2',date:'Sat Apr 26',duration:'15:30',distance:'0.8',pathIdx:3}];
+let playdates=[{id:'pd1',friend:'Sam',date:'Fri May 2',time:'9:00 AM',location:'Maple Park',pets:'Biscuit + Max'},{id:'pd2',friend:'Mia',date:'Sun May 4',time:'4:30 PM',location:'Riverside Trail',pets:'Luna + Coco'}];
+let pdRequests=[{id:'pr1',from:'Jake',date:'Sat May 3',time:'11:00 AM',location:'Dog Run',pets:'Biscuit + Rex'}];
+let selectedPets=new Set(['p1']),recording=false,elapsed=0,timerInt=null,activePts=[];
+let editingWalkId=null,editingPdId=null,selectedPdFriend=null,selectedEmoji='🐕',selectedEditPet=null;
+
+function switchTab(t){
+  ['home','friends','playdates','walks','pets'].forEach(x=>{
+    document.getElementById('view-'+x).classList.toggle('active',x===t);
+    document.getElementById('bnav-'+x).classList.toggle('active',x===t);
+  });
+  if(t==='home'){renderPetChipsHome();drawMyWalks();renderFriendFilterChips();}
+  if(t==='friends')renderFriends();
+  if(t==='playdates')renderPlaydates();
+  if(t==='walks')renderWalks();
+  if(t==='pets')renderPets();
+}
+function switchSubTab(st){
+  document.getElementById('stab-mymap').classList.toggle('active',st==='mymap');
+  document.getElementById('stab-friends-map').classList.toggle('active',st==='friends-map');
+  document.getElementById('subview-mymap').style.display=st==='mymap'?'block':'none';
+  document.getElementById('subview-friends-map').style.display=st==='friends-map'?'block':'none';
+  if(st==='friends-map'){renderFriendFilterChips();drawFriendWalks();}
+}
+function renderPetChipsHome(){const c=document.getElementById('pet-chips-home');c.innerHTML='';pets.forEach(p=>{const on=selectedPets.has(p.id);const ch=document.createElement('div');ch.className='pill'+(on?' on':'');ch.style.background=on?p.color:'';ch.style.borderColor=on?p.color:'';ch.textContent=p.emoji+' '+p.name;ch.onclick=()=>{if(selectedPets.has(p.id)&&selectedPets.size>1)selectedPets.delete(p.id);else selectedPets.add(p.id);renderPetChipsHome();};c.appendChild(ch);});}
+function renderFriendFilterChips(){const c=document.getElementById('friend-filter-chips');if(!c)return;c.innerHTML='';friends.forEach(f=>{const on=visibleFriends.has(f.id);const ch=document.createElement('div');ch.className='pill'+(on?' on':'');ch.style.background=on?f.color:'';ch.style.borderColor=on?f.color:'';ch.textContent=f.name;ch.onclick=()=>{if(visibleFriends.has(f.id))visibleFriends.delete(f.id);else visibleFriends.add(f.id);renderFriendFilterChips();drawFriendWalks();};c.appendChild(ch);});}
+function drawMyWalks(){const g=document.getElementById('my-walk-paths');if(!g)return;g.innerHTML='';walks.forEach(w=>{const pet=pets.find(p=>p.id===w.petId);const path=WALK_PATHS[w.pathIdx];if(!path)return;const pts=path.map(p=>p.join(',')).join(' ');const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',pts);poly.setAttribute('fill','none');poly.setAttribute('stroke',pet?pet.color+'cc':'#C4703Acc');poly.setAttribute('stroke-width','4');poly.setAttribute('stroke-linecap','round');poly.setAttribute('stroke-linejoin','round');g.appendChild(poly);path.forEach((pt,i)=>{if(i%4!==0)return;const c2=document.createElementNS('http://www.w3.org/2000/svg','circle');c2.setAttribute('cx',pt[0]);c2.setAttribute('cy',pt[1]);c2.setAttribute('r','3');c2.setAttribute('fill',pet?pet.color:'#C4703A');c2.setAttribute('opacity','0.5');g.appendChild(c2);});});}
+function drawFriendWalks(){const g=document.getElementById('friend-walk-paths');if(!g)return;g.innerHTML='';friends.forEach(f=>{if(!visibleFriends.has(f.id))return;const path=FRIEND_PATHS[f.id];if(!path)return;const pts=path.map(p=>p.join(',')).join(' ');const poly=document.createElementNS('http://www.w3.org/2000/svg','polyline');poly.setAttribute('points',pts);poly.setAttribute('fill','none');poly.setAttribute('stroke',f.color+'cc');poly.setAttribute('stroke-width','3.5');poly.setAttribute('stroke-linecap','round');poly.setAttribute('stroke-linejoin','round');g.appendChild(poly);});const mp=WALK_PATHS[0];const ml=document.createElementNS('http://www.w3.org/2000/svg','polyline');ml.setAttribute('points',mp.map(p=>p.join(',')).join(' '));ml.setAttribute('fill','none');ml.setAttribute('stroke','#C4703Acc');ml.setAttribute('stroke-width','3.5');ml.setAttribute('stroke-linecap','round');g.appendChild(ml);}
+function startWalk(){if(!selectedPets.size){toast('Choose a pet first');return;}if(recording)return;recording=true;elapsed=0;activePts=[];document.getElementById('btn-start').style.opacity='.35';document.getElementById('btn-start').style.cursor='default';document.getElementById('btn-stop').style.opacity='1';document.getElementById('btn-stop').style.cursor='pointer';document.getElementById('btn-stop').dataset.disabled='false';document.getElementById('rec-dot').classList.add('on');const names=[...selectedPets].map(id=>pets.find(p=>p.id===id)?.name).filter(Boolean).join(' & ');document.getElementById('rec-status').textContent='Recording — '+names+' exploring!';document.getElementById('active-walk-group').style.display='block';let step=0;const sim=[[193,148],[190,152],[187,156],[183,160],[180,164],[178,170],[182,174],[188,177],[194,178],[198,175],[203,170],[206,165],[208,159],[205,154],[200,150],[196,148]];timerInt=setInterval(()=>{elapsed++;const m=Math.floor(elapsed/60),s=elapsed%60;document.getElementById('rec-timer').textContent=m+':'+(s<10?'0':'')+s;if(step<sim.length){activePts.push(sim[step]);step++;}const line=document.getElementById('active-line');const dot=document.getElementById('active-dot');line.setAttribute('points',activePts.map(p=>p.join(',')).join(' '));if(activePts.length){const last=activePts[activePts.length-1];dot.setAttribute('cx',last[0]);dot.setAttribute('cy',last[1]);}},1000);}
+function stopWalk(){if(!recording)return;clearInterval(timerInt);recording=false;document.getElementById('btn-start').style.opacity='1';document.getElementById('btn-start').style.cursor='pointer';document.getElementById('btn-stop').style.opacity='.35';document.getElementById('btn-stop').style.cursor='default';document.getElementById('btn-stop').dataset.disabled='true';document.getElementById('rec-dot').classList.remove('on');const m=Math.floor(elapsed/60),s=elapsed%60;const dur=m+':'+(s<10?'0':'')+s;const dist=(elapsed/60*0.07).toFixed(1);walks.unshift({id:'w'+Date.now(),petId:[...selectedPets][0],date:'Today',duration:dur,distance:dist,pathIdx:-1});document.getElementById('active-walk-group').style.display='none';document.getElementById('rec-status').textContent='Choose a pet and start walking';document.getElementById('rec-timer').textContent='0:00';drawMyWalks();toast('Walk saved!');}
+function renderWalks(){const el=document.getElementById('walks-by-pet');el.innerHTML='';const byPet={};walks.forEach(w=>{if(!byPet[w.petId])byPet[w.petId]=[];byPet[w.petId].push(w);});pets.forEach(pet=>{const pw=byPet[pet.id];if(!pw||!pw.length)return;const grp=document.createElement('div');grp.style.marginBottom='20px';grp.innerHTML=`<div class="row" style="margin-bottom:10px;"><div style="width:36px;height:36px;border-radius:50%;background:${pet.color}22;display:flex;align-items:center;justify-content:center;font-size:20px;">${pet.emoji}</div><div style="font-family:var(--f1);font-size:16px;font-weight:500;">${pet.name}</div><div style="margin-left:auto;"><span class="tag" style="background:${pet.color}22;color:${pet.color};">${pw.length} walk${pw.length!==1?'s':''}</span></div></div>`;pw.forEach(w=>{const card=document.createElement('div');card.className='card';card.innerHTML=`<div class="walk-card"><div class="walk-thumb" style="background:${pet.color}18;">${pet.emoji}</div><div style="flex:1;"><div class="txt-sm muted">${w.date}</div><div class="row mt8" style="gap:12px;"><span style="font-weight:500;">${w.duration}</span><span class="muted txt-sm">min</span><span style="font-weight:500;">${w.distance}</span><span class="muted txt-sm">mi</span></div></div><div class="walk-actions"><div class="icon-btn" role="button" onclick="openEditWalk('${w.id}')">✏️</div><div class="icon-btn del" role="button" onclick="quickDeleteWalk('${w.id}')">🗑️</div></div></div>`;grp.appendChild(card);});el.appendChild(grp);});}
+function openEditWalk(wid){editingWalkId=wid;const w=walks.find(x=>x.id===wid);if(!w)return;document.getElementById('edit-walk-date').value=w.date;selectedEditPet=w.petId;const grid=document.getElementById('edit-walk-pets');grid.innerHTML='';pets.forEach(p=>{const on=p.id===selectedEditPet;const ch=document.createElement('div');ch.className='pill'+(on?' on':'');ch.style.background=on?p.color:'';ch.style.borderColor=on?p.color:'';ch.textContent=p.emoji+' '+p.name;ch.onclick=()=>{selectedEditPet=p.id;grid.querySelectorAll('.pill').forEach(c=>{c.classList.remove('on');c.style.background='';c.style.borderColor='';});ch.classList.add('on');ch.style.background=p.color;ch.style.borderColor=p.color;};grid.appendChild(ch);});document.getElementById('overlay-edit-walk').classList.add('show');}
+function saveWalkEdit(){const w=walks.find(x=>x.id===editingWalkId);if(!w)return;w.date=document.getElementById('edit-walk-date').value;if(selectedEditPet)w.petId=selectedEditPet;closeOverlay('overlay-edit-walk');renderWalks();drawMyWalks();toast('Walk updated');}
+function deleteWalk(){walks=walks.filter(x=>x.id!==editingWalkId);closeOverlay('overlay-edit-walk');renderWalks();drawMyWalks();toast('Deleted');}
+function quickDeleteWalk(wid){walks=walks.filter(x=>x.id!==wid);renderWalks();drawMyWalks();toast('Deleted');}
+function renderPets(){const el=document.getElementById('pets-list');el.innerHTML='';pets.forEach(pet=>{const card=document.createElement('div');card.className='pet-card';card.innerHTML=`<div class="pet-avatar" style="background:${pet.color}22;">${pet.emoji}</div><div style="flex:1;"><div style="font-weight:500;font-size:15px;">${pet.name}</div><div class="txt-sm muted">${pet.breed}</div><div class="mt8"><span class="tag" style="background:${pet.color}18;color:${pet.color};">${walks.filter(w=>w.petId===pet.id).length} walks</span></div></div>${pets.length>1?`<div class="btn-red" role="button" style="display:flex;align-items:center;justify-content:center;" onclick="removePet('${pet.id}')">Remove</div>`:''}`;el.appendChild(card);});}
+function openAddPetModal(){document.getElementById('new-pet-name').value='';document.getElementById('new-pet-breed').value='';selectedEmoji='🐕';const ep=document.getElementById('emoji-picker');ep.innerHTML='';EMOJIS.forEach(e=>{const ch=document.createElement('div');ch.className='pill'+(e===selectedEmoji?' on':'');ch.textContent=e;ch.style.fontSize='18px';ch.style.padding='4px 10px';ch.onclick=()=>{selectedEmoji=e;ep.querySelectorAll('.pill').forEach(c=>c.classList.remove('on'));ch.classList.add('on');};ep.appendChild(ch);});document.getElementById('overlay-add-pet').classList.add('show');}
+function savePet(){const name=document.getElementById('new-pet-name').value.trim();const breed=document.getElementById('new-pet-breed').value.trim();if(!name){toast('Enter a name');return;}const idx=pets.length%PET_COLORS.length;pets.push({id:'p'+Date.now(),name,breed:breed||'Mixed',emoji:selectedEmoji,color:PET_COLORS[idx]});closeOverlay('overlay-add-pet');renderPets();renderPetChipsHome();toast(name+' added!');}
+function removePet(pid){if(pets.length<=1){toast("Can't remove last pet");return;}pets=pets.filter(p=>p.id!==pid);selectedPets.delete(pid);if(!selectedPets.size)selectedPets.add(pets[0].id);renderPets();renderPetChipsHome();}
+function renderFriends(){const el=document.getElementById('friends-list');el.innerHTML='';friends.forEach(f=>{const card=document.createElement('div');card.className='friend-card';card.innerHTML=`<div class="initials" style="background:${f.color}22;color:${f.color};">${f.initials}</div><div style="flex:1;"><div style="font-weight:500;">${f.name} <span class="muted txt-sm">${f.handle}</span></div><div class="txt-sm muted mt8">${f.pets}</div></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;"><span class="overlap-badge">View map</span><div class="btn-red" role="button" style="height:28px;font-size:11px;display:flex;align-items:center;justify-content:center;" onclick="removeFriend('${f.id}')">Unfriend</div></div>`;el.appendChild(card);});}
+function addFriend(){const v=document.getElementById('friend-search-input').value.trim();if(!v){toast('Enter a name or handle');return;}const colors=['#534AB7','#0F6E56','#993C1D'];const idx=friends.length%colors.length;const name=v.replace('@','').replace(/_/g,' ').split(' ').map(s=>s[0].toUpperCase()+s.slice(1)).join(' ');friends.push({id:'f'+Date.now(),name,handle:v.startsWith('@')?v:'@'+v,initials:name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase(),color:colors[idx],pets:'Unknown'});document.getElementById('friend-search-input').value='';renderFriends();toast(name+' added!');}
+function removeFriend(fid){friends=friends.filter(f=>f.id!==fid);visibleFriends.delete(fid);renderFriends();}
+function renderPlaydates(){const rq=document.getElementById('pd-requests');const up=document.getElementById('pd-upcoming');rq.innerHTML='';up.innerHTML='';if(!pdRequests.length)rq.innerHTML='<div class="muted txt-sm" style="padding:8px 0 4px">No pending requests</div>';pdRequests.forEach(r=>{const c=document.createElement('div');c.className='playdate-card pd-request';c.innerHTML=`<div class="row-between"><div><div style="font-weight:500;">${r.from} wants a play date</div><div class="txt-sm muted mt8">${r.pets}</div></div><span class="date-badge">${r.date}</span></div><div class="txt-sm muted mt8">${r.time} · ${r.location}</div><div class="row mt12" style="gap:8px;"><div class="btn-grn" role="button" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;" onclick="acceptPd('${r.id}')">Accept</div><div class="btn-red" role="button" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;" onclick="denyPd('${r.id}')">Decline</div></div>`;rq.appendChild(c);});if(!playdates.length)up.innerHTML='<div class="muted txt-sm" style="padding:8px 0 4px">No upcoming play dates</div>';playdates.forEach(pd=>{const c=document.createElement('div');c.className='playdate-card pd-upcoming';c.innerHTML=`<div class="row-between"><div><div style="font-weight:500;">With ${pd.friend}</div><div class="txt-sm muted mt8">${pd.pets}</div></div><span class="date-badge">${pd.date}</span></div><div class="txt-sm muted mt8">${pd.time} · ${pd.location}</div><div class="row mt12" style="gap:8px;"><div class="btn-out" role="button" style="flex:1;height:34px;font-size:13px;display:flex;align-items:center;justify-content:center;" onclick="reschedulePd('${pd.id}')">Reschedule</div><div class="btn-red" role="button" style="flex:1;height:34px;display:flex;align-items:center;justify-content:center;" onclick="cancelPd('${pd.id}')">Cancel</div></div>`;up.appendChild(c);});}
+function openPdModal(){selectedPdFriend=friends[0]?.id||null;document.getElementById('pd-date').value='';document.getElementById('pd-time').value='';document.getElementById('pd-location').value='';const fc=document.getElementById('pd-friend-chips');fc.innerHTML='';friends.forEach(f=>{const on=f.id===selectedPdFriend;const ch=document.createElement('div');ch.className='pill'+(on?' on':'');ch.style.background=on?f.color:'';ch.style.borderColor=on?f.color:'';ch.textContent=f.name;ch.onclick=()=>{selectedPdFriend=f.id;fc.querySelectorAll('.pill').forEach(c=>{c.classList.remove('on');c.style.background='';c.style.borderColor='';});ch.classList.add('on');ch.style.background=f.color;ch.style.borderColor=f.color;};fc.appendChild(ch);});document.getElementById('overlay-pd').classList.add('show');}
+function savePd(){const date=document.getElementById('pd-date').value.trim();const time=document.getElementById('pd-time').value.trim();const loc=document.getElementById('pd-location').value.trim();if(!date||!time){toast('Enter date and time');return;}const friend=friends.find(f=>f.id===selectedPdFriend);playdates.push({id:'pd'+Date.now(),friend:friend?.name||'Friend',date,time,location:loc||'TBD',pets:'Biscuit + ?'});closeOverlay('overlay-pd');renderPlaydates();toast('Play date requested!');}
+function acceptPd(rid){const r=pdRequests.find(x=>x.id===rid);if(!r)return;playdates.push({id:'pd'+Date.now(),friend:r.from,date:r.date,time:r.time,location:r.location,pets:r.pets});pdRequests=pdRequests.filter(x=>x.id!==rid);renderPlaydates();toast('Confirmed!');}
+function denyPd(rid){pdRequests=pdRequests.filter(x=>x.id!==rid);renderPlaydates();toast('Declined');}
+function cancelPd(pid){playdates=playdates.filter(x=>x.id!==pid);renderPlaydates();toast('Cancelled');}
+function reschedulePd(pid){editingPdId=pid;const pd=playdates.find(x=>x.id===pid);if(!pd)return;document.getElementById('reschedule-date').value=pd.date;document.getElementById('reschedule-time').value=pd.time;document.getElementById('overlay-reschedule').classList.add('show');}
+function saveReschedule(){const pd=playdates.find(x=>x.id===editingPdId);if(!pd)return;pd.date=document.getElementById('reschedule-date').value;pd.time=document.getElementById('reschedule-time').value;closeOverlay('overlay-reschedule');renderPlaydates();toast('Rescheduled!');}
+function closeOverlay(id){document.getElementById(id).classList.remove('show');}
+function toast(msg){const app=document.getElementById('app');app.style.position='relative';const t=document.createElement('div');t.className='toast';t.textContent=msg;app.appendChild(t);setTimeout(()=>t.remove(),2400);}
+
+renderPetChipsHome();drawMyWalks();
+</script>
+</body>
+</html>
