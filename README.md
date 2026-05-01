@@ -2,7 +2,7 @@
 
 > **A mobile-first dog walk tracker that turns every walk into a colorful map — and connects you with other dog parents nearby.**
 
-🔗 **[Try the live prototype →](https://YOUR-USERNAME.github.io/colorpaws-demo/)**
+🔗 **[Try the live prototype →](https://jennifer-zi.github.io/colorpaws-demo/)**
 
 *(Replace `YOUR-USERNAME` with your GitHub handle once deployed.)*
 
